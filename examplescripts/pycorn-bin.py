@@ -81,6 +81,8 @@ group1.add_argument("--par1", type = str, default='Cond',
                     help="Data for 2nd y-axis (Default=Cond), to disable 2nd y-axis, use --par1 None")
 group1.add_argument("--par2", type = str, default=None,
                     help="Data for 3rd y-axis (Default=None)")                 
+parser.add_argument("-w", "--wavelength", action='append', default=None,
+                    help="Data to plot (Default=None)")
 group1.add_argument('-f', '--format', type = str,
                     choices=['svg','svgz','tif','tiff','jpg','jpeg',
                     'png','ps','eps','raw','rgba','pdf','pgf'],
@@ -144,7 +146,17 @@ def smartscale(inp):
     checks user input/fractions to determine scaling of x/y-axis
     returns min/max for x/y
     '''
-    UV_blocks = [i for i in inp.keys() if i.startswith('UV') and not i.endswith('_0nm')]
+    #UV_blocks = [i for i in inp.keys() if i.startswith('UV') and not i.endswith('_0nm')]
+    UV_blocks = []
+    for i in inp.keys():
+        if i.startswith('UV') and not i.endswith('_0nm'):
+            plot_this_data = True
+            if args.wavelength:
+                plot_this_data = any([w in i for w in args.wavelength])
+
+            if plot_this_data:
+                UV_blocks.append(i)
+
     uv1_data = inp[UV_blocks[0]]['data']
     uv1_x, uv1_y = xy_data(uv1_data)
     try:
@@ -210,11 +222,17 @@ def plotterX(inp,fname):
     host.set_ylim(plot_y_min, plot_y_max)
     for i in inp.keys():
         if i.startswith('UV') and not i.endswith('_0nm'):
-            x_dat, y_dat = xy_data(inp[i]['data'])
-            print("Plotting: " + inp[i]['data_name'])
-            stl = styles[i[:4]]
-            p0, = host.plot(x_dat, y_dat, label=inp[i]['data_name'], color=stl['color'],
-                            ls=stl['ls'], lw=stl['lw'],alpha=stl['alpha'])
+
+            plot_this_data = True
+            if args.wavelength:
+                plot_this_data = any([w in i for w in args.wavelength])
+
+            if plot_this_data:
+                x_dat, y_dat = xy_data(inp[i]['data'])
+                print("Plotting: " + inp[i]['data_name'])
+                stl = styles[i[:4]]
+                p0, = host.plot(x_dat, y_dat, label=inp[i]['data_name'], color=stl['color'],
+                                ls=stl['ls'], lw=stl['lw'],alpha=stl['alpha'])
     if args.par1 == 'None':
         args.par1 = None
     if args.par1:
