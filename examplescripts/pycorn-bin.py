@@ -297,10 +297,7 @@ def plotterX(inp,fname):
     host.yaxis.set_minor_locator(AutoMinorLocator())
     if not args.no_title:
         plt.title(fname, loc='left', size=9)
-    if not args.output:
-        plot_file = fname[:-4] + "_" + inp.run_name + "_plot." + args.format
-    else:
-        plot_file = args.output
+    plot_file = fname[:-4] + "_" + inp.run_name + "_plot." + args.format
     plt.savefig(plot_file, bbox_inches='tight', dpi=args.dpi)
     print("Plot saved to: " + plot_file)
     plt.clf()
